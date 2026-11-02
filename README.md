@@ -24,7 +24,7 @@ shown by date: line-ups, set times, doors, prices and ticket links.
 
 > **Lyhyesti suomeksi:** GigTown kokoaa kaikki Tampereen keikat, klubit,
 > stand up -illat ja tapahtumat yhdelle sivulle. Botit käyvät joka yö klo 2
-> läpi kaupungin tapahtumakalenterin ja 12 keikkapaikan sivut, yhdistävät
+> läpi kaupungin tapahtumakalenterin ja 18 keikkapaikan sivut, yhdistävät
 > saman keikan eri lähteistä, tunnistavat lämppärit, soittoajat, ovien
 > aukeamisen ja hinnat, hakevat bändeille genret ja Spotify-/somelinkit, julkaisevat
 > illan keikat videona Instagramiin ja Facebookiin, ja rakentavat jokaiselle päivälle, paikalle ja tapahtumalle oman
@@ -127,6 +127,12 @@ list you read by date, like a festival programme.
 | **Pethaus** | Pispala's experimental and jazz nights (cafés and podcasts left out) | Dated lines |
 | **Pub Kujakolli** | Free Friday gigs at 22:00 | Dated lines |
 | **Tampere-talo** | Concerts and stand-up (exhibitions and talks left out) | The venue's public event feed |
+| **Kulttuurikeskus Maanalainen** | The month's gigs with prices; weekend showtime 21.30 | Dated lines |
+| **Ravintola Suoma** | Gigs and pikkujoulu shows with times (menus and holidays left out) | Dated lines |
+| **Ruby & Fellas** | The month's bands (the monthly page is found from the home page) | Dated lines |
+| **Kulttuuriravintola Railo** | Monthly gig nights in Nekala | Dated lines |
+| **F54** | Club gigs | schema.org JSON-LD |
+| **Rymy-Eetu** | Party bands and live band karaoke (its malformed dates are read as meant) | schema.org JSON-LD |
 | **Ticketmaster Discovery API** | Start times, price ranges, genres | Official API (optional key) |
 | **Any venue with schema.org events** | `MusicEvent`, `ComedyEvent`, … from the page | `JSONLD_URLS` |
 | **MusicBrainz** | Genres and Spotify/social links for performers | Official API, cached per artist |
@@ -136,8 +142,13 @@ list you read by date, like a festival programme.
 and does not allow scraping; Bandsintown, Lippu.fi, Ticketmaster.fi and
 meteli.net block automated requests. Ruma's and Gong's domains are gone,
 Lepakkomies' domain is an unrelated blog, Yo-talo is closed for renovation.
-GigTown does not try to get around any of this: those events reach it
-through the city calendar, and venue Facebook events are linked.
+Jerun Piilopaikka, John Scott's and Atmos load their programme with
+JavaScript, and many small bars (Paapan kapakka, Pub Simon, Players Inn,
+Vanha Monttu) post their gigs only on Instagram and Facebook, which do not
+allow automated reading. GigTown does not try to get around any of this:
+those events reach it through the city calendar and the ticket shops, and
+every listed venue (40 in Tampere, closed ones like Olympia and Yo-talo
+excluded) is in the venue registry, so its gigs get the right name and type.
 
 ### The crawling rules
 
