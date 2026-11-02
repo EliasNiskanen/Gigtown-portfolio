@@ -8,7 +8,7 @@ Concerts, club nights, stand-up and small bar gigs, collected every night by
 bots from public calendars and venue websites, merged, sorted by genre and
 shown by date: line-ups, set times, doors, prices and ticket links.
 
-**Live: [gigtown.fi](https://gigtown.fi)**
+**Live: [gigtown.fi](https://gigtown.fi) · [Instagram](https://www.instagram.com/gigtown_tampere/) · [Facebook](https://www.facebook.com/profile.php?id=61595840954236)**
 
 [Features](#features) · [Sources](#sources) · [How it works](#architecture) · [Engineering decisions](#engineering-decisions) · [Source code](#source-code)
 
@@ -26,8 +26,8 @@ shown by date: line-ups, set times, doors, prices and ticket links.
 > stand up -illat ja tapahtumat yhdelle sivulle. Botit käyvät joka yö klo 2
 > läpi kaupungin tapahtumakalenterin ja 12 keikkapaikan sivut, yhdistävät
 > saman keikan eri lähteistä, tunnistavat lämppärit, soittoajat, ovien
-> aukeamisen ja hinnat, hakevat bändeille genret ja Spotify-/somelinkit, ja
-> rakentavat jokaiselle päivälle, paikalle ja tapahtumalle oman
+> aukeamisen ja hinnat, hakevat bändeille genret ja Spotify-/somelinkit, julkaisevat
+> illan keikat videona Instagramiin ja Facebookiin, ja rakentavat jokaiselle päivälle, paikalle ja tapahtumalle oman
 > hakukoneystävällisen sivun ("Keikat tänään Tampereella").
 
 ![GigTown front page: "Keikat tänään Tampereella", tonight's gigs set as a festival line-up poster over a stage curtain with moving spotlights](docs/images/home.jpg)
@@ -68,15 +68,15 @@ list you read by date, like a festival programme.
   stage curtain with flickering lights, moving spotlights and a cloth that
   shivers on the kick drum (pure CSS, stops under `prefers-reduced-motion`).
 - **Read by night.** A night runs 06:00–06:00, so a 00:30 set belongs to
-  Friday night. The list loads three nights at a time ("Lataa lisää"), date
-  tags on the right follow your scrolling, a strip shows the next 60 nights
+  Friday night. "Lataa lisää" loads one more night at a time, date
+  tags on the right list the nights on the page and follow your scrolling, a strip shows the next 60 nights
   with event counts, and a month calendar reaches any date beyond that.
 - **Line-ups that make sense.** "Kivesveto Go-Go (22.30), Sanktio (21.30)"
   becomes a headliner and a support act with set times, latest set first.
   Doors ("Ovet klo 19:00"), advance and door prices ("15 € / 17 €") and age
   limits ("K-18") are read from the listings.
 - **Sorting.** Gigs, stand-up, club nights and festivals; 14 genres from metal and punk to jazz, folk and iskelmä;
-  venue, free entry and free-text search.
+  venue and free-text search.
 - **Links for every act and event.** Spotify, Instagram, Facebook, TikTok,
   YouTube, Bandcamp and home page for each performer (from MusicBrainz), a
   "search on Spotify" fallback, and the organiser's social media for every
@@ -89,6 +89,20 @@ list you read by date, like a festival programme.
   `/tampere/tapahtuma/kivesveto-go-go-vastavirta-klubi-31-10-2026-4`), a
   prerendered HTML page with its own title and description, schema.org
   `MusicEvent` data for Google's event search, and a sitemap.
+- **Cancelled, sold out, few tickets left.** The bots read "peruttu",
+  "loppuunmyyty" and "viimeiset liput" from every source (and check the
+  venues again every night); cancelled and sold-out gigs get a worn red
+  rubber stamp, nearly sold-out ones a "Liput vähissä" tag.
+- **Daily social video.** Every afternoon a bot films tonight's gigs over
+  the stage curtain into a 9:16 video (Playwright + ffmpeg, frame by frame)
+  and posts it to [Instagram](https://www.instagram.com/gigtown_tampere/) and [Facebook](https://www.facebook.com/profile.php?id=61595840954236) through Meta's
+  Graph API, with the night's best-known act from Deezer in the caption.
+- **Suomeksi ja englanniksi.** A flag switch in the header turns the whole
+  site into English; pages for search engines stay Finnish.
+- **Fast and free to run.** The nightly build writes each night's events
+  as static files next to the site, so visitors read Cloudflare's edge
+  cache and never the database (which is written once a week and read once
+  a night).
 - **Ready for more cities.** The city is the first part of every URL and a
   tab in the header; adding Helsinki or Turku is a new entry in
   `app/cities.py` plus its sources.
@@ -116,6 +130,7 @@ list you read by date, like a festival programme.
 | **Ticketmaster Discovery API** | Start times, price ranges, genres | Official API (optional key) |
 | **Any venue with schema.org events** | `MusicEvent`, `ComedyEvent`, … from the page | `JSONLD_URLS` |
 | **MusicBrainz** | Genres and Spotify/social links for performers | Official API, cached per artist |
+| **Deezer** | The night's best-known act for the social video | Public API |
 
 **Checked, but not possible:** Facebook has no public event search any more
 and does not allow scraping; Bandsintown, Lippu.fi, Ticketmaster.fi and
@@ -270,7 +285,7 @@ docs/logo/               the logo as PNG and SVG
 ## Roadmap
 
 - Helsinki, Turku and other cities as tabs
-- A daily social media video of tonight's gigs (built, waiting for accounts)
+- TikTok for the daily video
 - More small venues as they publish their programmes on the web
 - An iCal feed per filter, so a saved view can be followed in a calendar app
 
