@@ -93,7 +93,7 @@ list you read by date, like a festival programme.
   "loppuunmyyty" and "viimeiset liput" from every source (and check the
   venues again every night); cancelled and sold-out gigs get a worn red
   rubber stamp, nearly sold-out ones a "Liput vähissä" tag.
-- **Daily social video.** Every afternoon a bot films tonight's gigs over
+- **Daily social video.** Every day a bot films tonight's gigs over
   the stage curtain into a 9:16 video (Playwright + ffmpeg, frame by frame)
   and posts it to [Instagram](https://www.instagram.com/gigtown_tampere/) and [Facebook](https://www.facebook.com/profile.php?id=61595840954236) through Meta's
   Graph API, with the night's best-known act from Deezer in the caption.
