@@ -231,6 +231,42 @@ Cloudflare serves at `/tampere/tanaan` without a trailing-slash redirect.
 name match, preferring the country in the gig title ("(SWE)") or Finland;
 ambiguous names are skipped rather than guessed.
 
+## Docker
+
+Both halves of GigTown are built as small, production-style images, and the
+same backend container runs on a laptop and in the cloud.
+
+**Backend** (`Dockerfile`): a multi-stage build. Poetry resolves the
+dependencies in a build stage; the runtime stage on `python:3.13-slim` gets
+only the virtualenv and the code, no Poetry, no compilers. It runs as an
+unprivileged user (uid 10001). The entrypoint applies the Alembic migrations
+and starts Uvicorn on `$PORT`, so Cloud Run, App Runner or plain Docker can
+run it unchanged; `RUN_MIGRATIONS=false` leaves migrations to a separate job
+when there are many instances. Production is this image on Google Cloud Run,
+built from the Dockerfile on every deploy.
+
+**Frontend** (`frontend/Dockerfile`): Node 22 builds the React app, and
+`nginx:1.27-alpine` serves the static files with long-lived caching for
+hashed assets, an SPA fallback and security headers. The backend address is
+not baked in: a start-up script writes it from `API_URL` into `/config.js`
+(and refuses values with quotes or `<`), so **one image works in every
+environment**. The live site is served by Cloudflare Workers; the image is
+the portable way to run the frontend anywhere else, Cloud Run included (it
+listens on `$PORT`, default 8080).
+
+**Local stack** (`docker-compose.yml`): PostgreSQL 16 with a health check,
+and the API container starting only once the database is ready:
+
+```bash
+cp .env.example .env
+docker compose up --build                          # API on http://localhost:8000
+docker compose exec api python -m app.cli ingest   # fill the database
+```
+
+**In CI:** after the tests, both images are built on every push to main and
+every pull request, and the frontend image is started and checked: it must
+serve the app and write the `API_URL` it was given into `/config.js`.
+
 ## Tech stack
 
 | | |
