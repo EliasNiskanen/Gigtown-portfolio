@@ -2,13 +2,15 @@
 
 <img src="docs/logo/gigtown-logo-black.png" width="260" alt="GigTown logo: a red truss stage with spotlights, speakers and a guitarist, and GIG TOWN in white metal lettering" />
 
-### Every gig in Tampere on one page.
+### Every gig in Tampere and Helsinki on one page.
 
 Concerts, club nights, stand-up and small bar gigs, collected every night by
 bots from public calendars and venue websites, merged, sorted by genre and
 shown by date: line-ups, set times, doors, prices and ticket links.
 
-**Live: [gigtown.fi](https://gigtown.fi) · [Instagram](https://www.instagram.com/gigtown_tampere/) · [Facebook](https://www.facebook.com/profile.php?id=61595840954236)**
+**Live: [gigtown.fi](https://gigtown.fi) · [Helsinki](https://gigtown.fi/helsinki)**
+
+Tampere: [Instagram](https://www.instagram.com/gigtown_tampere/) · [Facebook](https://www.facebook.com/profile.php?id=61595840954236) · Helsinki: [Instagram](https://www.instagram.com/gigtown_helsinki/) · [Facebook](https://www.facebook.com/profile.php?id=61596446194417)
 
 [Features](#features) · [Sources](#sources) · [How it works](#architecture) · [Engineering decisions](#engineering-decisions) · [Source code](#source-code)
 
@@ -22,7 +24,7 @@ shown by date: line-ups, set times, doors, prices and ticket links.
 
 </div>
 
-> **Lyhyesti suomeksi:** GigTown kokoaa kaikki Tampereen keikat, klubit,
+> **Lyhyesti suomeksi:** GigTown kokoaa kaikki Tampereen ja Helsingin keikat, klubit,
 > stand up -illat ja tapahtumat yhdelle sivulle. Botit käyvät joka yö klo 2
 > läpi kaupungin tapahtumakalenterin, yli 20 keikkapaikan sivut ja 16 baarin
 > Instagram-postaukset, yhdistävät
@@ -30,7 +32,8 @@ shown by date: line-ups, set times, doors, prices and ticket links.
 > aukeamisen ja hinnat, hakevat bändeille genret ja Spotify-/somelinkit, julkaisevat
 > illan keikat videona Instagramiin ja Facebookiin, ja rakentavat jokaiselle päivälle, paikalle ja tapahtumalle oman
 > hakukoneystävällisen sivun ("Keikat tänään Tampereella"). Keikat saa myös
-> tilattua puhelimen kalenteriin, joka päivittyy itsestään.
+> tilattua puhelimen kalenteriin, joka päivittyy itsestään, ja isojen keikkojen
+> lipunmyynnin alkamispäivät näkyvät kuukausia etukäteen.
 
 ![GigTown front page: "Keikat tänään Tampereella", tonight's gigs set as a festival line-up poster over a stage curtain with moving spotlights](docs/images/home.jpg)
 
@@ -125,9 +128,27 @@ list you read by date, like a festival programme.
   as static files next to the site, so visitors read Cloudflare's edge
   cache and never the database (which is written once a week and read once
   a night).
-- **Ready for more cities.** The city is the first part of every URL and a
-  tab in the header; adding Helsinki or Turku is a new entry in
-  `app/cities.py` plus its sources.
+- **Two cities, kept apart.** Tampere and Helsinki each have their own
+  bots, venue list, pages (`/helsinki/tanaan`), calendars and social
+  channels. A source that serves several cities stamps each event with its
+  own city, and a gig is filed under a city only when the city is certain.
+  A new city is one entry in `app/cities.py`, its sources and one line in
+  the social channels list.
+- **Ticket sales opening.** A "Lipunmyynti alkaa" list shows big gigs months
+  ahead with the day and hour their ticket sale opens ("to 26.11. klo 9"),
+  read from the promoters' and ticket shops' Instagram posts (Business
+  Discovery API), the city calendar and Ticketmaster. Shows sold together are
+  one line.
+- **Ticket clicks without cookies.** Clicks on ticket links are counted per
+  day, event, list and ticket shop, with no cookie and no IP stored; a report
+  gives the numbers to show ticket shops for affiliate deals.
+- **Missing a venue?** A field in the footer takes suggestions without any
+  personal data; a weekly issue lists the new ones.
+- **Social posts per city.** Daily Reel and Story, a Monday week image and a
+  Friday weekend post go to each city's own Facebook, Instagram and Threads
+  (TikTok as a draft).
+- **Smooth on phones.** The stage, banner and ticker animate on the graphics
+  card only and pause when off screen.
 - **Rock look.** Black and signal red, Anton poster type, white metal
   lettering in the logo, film grain, duotone event images. A light "paper
   poster" theme too. No sideways scrolling on phones.
@@ -201,16 +222,16 @@ flowchart LR
     CLK[Cloudflare cron worker<br/>every hour] -->|starts on time| CRON
     CRON[GitHub Actions<br/>nightly 02:00] -->|python -m app.cli ingest| BOTS
     subgraph BOTS[Ingest]
-        S1[City calendar API]
+        S1[City calendars: Tampere, Helsinki Linked Events]
         S2[20+ venue and bar sites]
         S3[Ticketmaster / JSON-LD]
-        S4[Bars' Instagram<br/>Meta Business Discovery]
+        S4[Bars' and promoters' Instagram<br/>Meta Business Discovery]
         MB[MusicBrainz genres + links]
     end
     BOTS -->|normalize, classify, merge| DB
     CRON -.->|after ingest| PRE[npm run prerender<br/>2,500+ HTML pages, sitemap,<br/>data files, 115 calendars]
     PRE --> WEB
-    CRON -.->|daily| SOC[Video, Reel + Story<br/>to Instagram and Facebook]
+    CRON -.->|daily| SOC[Video, Reel + Story<br/>per city: FB, IG, Threads]
     WD[Watchdog] -.->|repairs, then opens issues| CRON
 ```
 
@@ -392,14 +413,16 @@ frontend/
   src/prerender/         nightly static pages, sitemap, data files and calendars
   scripts/social/        the daily video, Reels, Stories and feed images
 cron/                    Cloudflare worker that starts the workflows on time
+.claude/skills/          how to add a source, a city, posts, the look, reuse the architecture
 docs/logo/               the logo as PNG and SVG
 .github/workflows/       CI, nightly ingest, deploys, social posts, watchdog
 ```
 
 ## Roadmap
 
-- Helsinki, Turku and other cities as tabs
-- TikTok for the daily video
+- Turku, Oulu and other cities
+- Affiliate deals with ticket shops, based on the click counts
+- The same architecture for other listing sites
 - More small venues as they publish their programmes on the web
 
 <sub>Logo artwork by Elias Niskanen. The logo lettering uses
